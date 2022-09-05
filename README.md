@@ -14,9 +14,20 @@
 ![image](https://user-images.githubusercontent.com/73609846/188471004-b7c04466-c18d-47dc-a308-aa121261d4ae.png)
 ![image](https://user-images.githubusercontent.com/73609846/188471794-28536deb-e005-4dd8-8f54-e14d0b9a3588.png)
 
-5-User can upload CV of interns by clicking upload icon in Cv column.
-After that User can also download that CV.
-![image](https://user-images.githubusercontent.com/73609846/188471244-c34a333f-45f8-4413-819e-e19b52a4c204.png)
-
-![image](https://user-images.githubusercontent.com/73609846/188471408-91308713-d9e7-4dc7-9e93-2a68ff05bc7d.png)
+5.1-User can upload CV of interns by clicking upload icon in Cv column.
 ![image](https://user-images.githubusercontent.com/73609846/188471617-5d351d56-a26e-494e-8f9d-a1e2ddc56d0e.png)
+5.2-After that User can also download that CV.
+![image](https://user-images.githubusercontent.com/73609846/188471408-91308713-d9e7-4dc7-9e93-2a68ff05bc7d.png)
+
+6-User can delete, edit interns
+![image](https://user-images.githubusercontent.com/73609846/188472070-763cfacb-fa4b-47bf-8833-1743b9b87473.png)
+
+![image](https://user-images.githubusercontent.com/73609846/188472002-bb26cb28-1130-42a1-878a-db4f45f1afd7.png)
+
+7- User can add new intern by button on grid
+![image](https://user-images.githubusercontent.com/73609846/188472162-74f1d5de-151e-4c8b-ab72-94d9dbe443af.png)
+8- User can add new intern, with/without CV and picture, on new page
+![image](https://user-images.githubusercontent.com/73609846/188472292-a8562458-2887-404b-8570-c910c0fdf3c1.png)
+
+9- User can send some documents to interns. In our example it is some form for intern to fill and send back to the interested person
+![image](https://user-images.githubusercontent.com/73609846/188472392-7192141b-70d3-405d-a2bc-c810d579ca1e.png)
