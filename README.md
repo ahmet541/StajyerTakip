@@ -5,6 +5,7 @@
 
 
 2-The user can observe the Internship status of the interns, whether the internship is ongoing, etc. can see.
+
 ![image](https://user-images.githubusercontent.com/73609846/188471449-cfcc32e3-9f6a-4e17-8067-4a9c37dd39fa.png)
 
 
@@ -21,6 +22,7 @@
 
 
 5.1-User can upload CV of interns by clicking upload icon in Cv column.
+
 ![image](https://user-images.githubusercontent.com/73609846/188471617-5d351d56-a26e-494e-8f9d-a1e2ddc56d0e.png)
 
 
