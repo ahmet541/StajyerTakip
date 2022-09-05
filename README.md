@@ -1,2 +1,2 @@
 # StajyerTakip
-Application to follow the internship status of interns
+Application to follow the internship status of students
