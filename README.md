@@ -33,6 +33,7 @@
 
 
 6-User can delete, edit interns
+
 ![image](https://user-images.githubusercontent.com/73609846/188472070-763cfacb-fa4b-47bf-8833-1743b9b87473.png)
 ![image](https://user-images.githubusercontent.com/73609846/188472002-bb26cb28-1130-42a1-878a-db4f45f1afd7.png)
 
