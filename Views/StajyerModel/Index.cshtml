@@ -1,0 +1,651 @@
+﻿@model IEnumerable<StajyerTakip.Models.StajyerModel>
+@using Kendo.Mvc.UI
+@using static StajyerTakip.Models.StajyerModel
+@using System.Net;
+@{
+    ViewData["Title"] = "Index";
+}
+@Html.AntiForgeryToken()
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Xsrf
+
+
+
+
+
+
+    @(Html.Kendo().Grid<StajyerTakip.Models.StajyerModel>()
+            .Name("grid")
+            .Columns(columns =>
+            {
+                columns.Bound(p => p.Name).Title("Stajyer İsim Soyad").ClientTemplate("<button class='product-photo' onclick='ImageClickAction(#=data.Id#,\"#=data.LocationOfPicture#\")' style='background-image: url(" 
+                + @Url.Content("~/Pictures/#:data.LocationOfPicture#") 
+                + ")'></button><div class='product-name'>#: Name #</div>"
+                ).Filterable(ftb => ftb.Cell(cell => cell.Operator("contains").SuggestionOperator(FilterType.Contains)));
+
+            columns.Bound(p => p.IdentificationNumber).Title("T.C. Kimlik Numarası");
+            columns.Bound(p => p.StartingDate).Title("Staj Başlama Tarihi"); 
+            columns.Bound(p => p.EndingDate).Title("Staj Bitiş Tarihi");
+            columns.Bound(p => p.State).EditorTemplateName("GridForeignKey").Title("Staj Durumu").ClientTemplate("<span id='Stajyer_#=data.Id#' class='stajyerDurumuTemplate'></span>").Filterable(false);//.ClientTemplateId("<span id='Stajyer_#=data.Id#' class='stajyerDurumuTemplate'></span>")
+            columns.Template("#=stajDurumuTemplate(data)#"
+            ).Title("Cv");
+
+            columns.Command(cmd=>{cmd.Edit(); cmd.Destroy();});
+            })
+
+            .ToolBar(toolbar =>
+            {
+                toolbar.Create().Text("Yükleme Yapmadan Yeni Staj Bilgisi Ekle");
+                toolbar.Custom().Text("Yeni Staj Bilgisi Ekle").HtmlAttributes(new { id = "addNewStajyer", @class="floatRight",  onclick = "~/StajyerModel/Index" }); 
+            })
+            .Reorderable(reorderable => reorderable.Columns(true))
+            .Editable(editable  => editable.Mode(GridEditMode.PopUp).Window(q => q.Events(e => e.Close("refreshGrid"))))
+            .Pageable(e => e.Numeric(true)
+                            .PageSizes(new[] { 5,10,20, 50, 100, 500 })
+            )
+            .Sortable()
+            .Scrollable()
+            .Filterable(ftb => ftb.Mode(GridFilterMode.Row))
+
+            .ColumnMenu()
+            .Groupable()
+            .Events(e=>e.DataBound("dataBound")) 
+            .HtmlAttributes(new { style = "height:800px;" })
+            .DataSource(dataSource => dataSource
+                .Ajax()
+                .PageSize(5)
+           .ServerOperation(false)
+
+                .Read(read => read.Action("ReadOrders", "Grid"))
+                .Model(model =>{ 
+                    model.Id(p => p.Id); 
+                    model.Field(p => p.Id).Editable(false); 
+                })
+                  
+                .Update(update => update.Action("UpdateOrders", "Grid"))
+                .Create(update => update.Action("CreateOrders", "Grid"))
+                
+                .Destroy(update => update.Action("DestroyOrders", "Grid" ))
+            )
+    )
+
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/jszip/2.4.0/jszip.min.js"></script>
+<script type="text/javascript">
+     function stajDurumuTemplate(data) {
+     
+        var first = "<div style='text-align: center'>";
+        var second = "<kendo-button class='k-icon cv-download-button cv-icon' name = 'cvDownloadButton'type='button' onclick='CvDownloadAction(\"" + data.LocationOfCV + "\")'> </kendo-button>";
+        var third = "<kendo-button class='k-icon cv-upload-button cv-icon' name = 'cvUploadButton' type='button' onclick='OpenCvUploadWindow(" + data.Id + ",\"" + data.LocationOfCV + "\")' ></kendo-button>"
+            + "<div>";
+        var result = first;
+        if (data.LocationOfCV != "") { result += second;}
+        result += third;
+        return result;
+    }
+
+    function dataBound(e) {
+
+
+        var grid = this;
+
+
+          //Staj durumu color selection
+            grid.table.find("tr").each(function () {
+                var dataItem = grid.dataItem(this);
+                var themeColor;
+                var text;
+
+                switch(dataItem.State){
+                    case 0: themeColor = 'warning'; text = 'başlamadı'; break;
+                    case 1: themeColor = 'success'; text = 'devam ediyor';break;
+                    case 2: themeColor = 'secondary'; text = 'bitirdi';break;
+                    default: themeColor = 'error'; text = 'ihlal';break;
+                }
+
+
+                $(this).find(".stajyerDurumuTemplate").kendoBadge({
+                    themeColor: themeColor,
+                    text: text,
+                });
+
+                kendo.bind($(this), dataItem);
+            });
+    }
+    $(document).ready(function () {
+        window.onbeforeunload = function () { updateLogout(); };
+        });
+    
+        function updateLogout() {
+            //TO DO no need to use
+        }
+    
+    
+</script>
+
+
+
+
+
+
+
+    <style>
+
+    .k-clear-selected, .k-upload-selected {
+        display: none !important;
+      }
+    .cv-icon {
+        font-size:32px;
+    }
+    .cv-download-button:before {
+        content: "\e90e"; /* Adds a glyph using the Unicode character number */
+
+   }
+    .cv-upload-button:before {
+        content: "\e133"; /* Adds a glyph using the Unicode character number */
+
+
+   }
+    .later {
+        font-weight: bold;
+        color: rgb(204, 204, 0);
+    }
+    .now {
+        font-weight: bold;
+        color: lawngreen;
+    }
+    .past {
+        font-weight: bold;
+        color:darkgray;
+    }
+    .quit{
+        font-weight: bold;
+        color:red;
+    }
+    #grid .k-grid-toolbar
+    {
+        padding: .6em 1.3em .6em .4em;
+    }
+    .category-label
+    {
+        vertical-align: middle;
+        padding-right: .5em;
+    }
+    #category
+    {
+        vertical-align: middle;
+    }
+    .refreshBtnContainer {
+        display: inline-block;
+    }
+    .k-grid .toolbar {
+        margin-left: auto;
+        margin-right: 0;
+    }
+</style>
+
+
+
+
+@(Html.Kendo().Window().Name("Details")
+    .Title("Customer Details")
+    .Visible(false)
+    .Modal(true)
+    .Draggable(true)
+    .Width(300)
+)     
+@(Html.Kendo().Window().Name("PictureBig")
+    .Visible(false)
+    .Modal(true)
+    .Draggable(true)
+    .Resizable()
+    .Content(@<text>
+
+    <img src="" id="PictureBigImage">
+
+    <div align="center">
+        @(Html.Kendo().Button()
+        .Name("PictureBigButtonKendo")
+
+        .Content("Yeni Fotoğraf Yükle")
+        .Events(e => e.Click("OpenUpdatePictureWindow"))
+        )
+    </div>
+
+
+
+    </text>)
+    .Actions( a => a
+            .Refresh().Minimize().Maximize().Close()
+    )
+    .Events( e => e.
+        Refresh("window_refresh"))
+    .Height(510)
+
+) 
+
+@(Html.Kendo().Window().Name("UpdatePicture")
+    .Visible(false)
+    .Modal(true)
+    .Draggable(true)
+    .Content(@<text>
+
+
+
+    <div class="wrapper">
+        <div id="picturesToUpdate"></div>
+        <div class="dropZoneElement">
+            <div class="textWrapper">
+                <p><span>+</span>Fotoğraf ekle.</p>
+                <p class="dropImageHereText">Fotoğrafı buraya sürükleyiniz.</p>
+            </div>
+        </div>
+    </div>
+
+    @(Html.Kendo().Upload()
+    .Name("pictures")
+    .Async(a => a
+    .Save("Picture_Save", "StajyerModel")
+    .Remove("Picture_Remove", "StajyerModel")
+    .AutoUpload(false)
+    )
+    .Events(e => e.Success("onSuccessPicture").Select("onSelectPicture").Upload("onUploadPicture"))
+    .ShowFileList(true)
+    .Multiple(false)
+    .DropZone(".dropZoneElement")
+    .Validation(validation =>
+    {
+    validation.AllowedExtensions(new string[] { ".jpg", ".jpeg", ".png", ".bmp", ".gif" });
+    validation.MaxFileSize(5242880);
+    })
+    )
+    @(Html.Kendo().Button()
+    .Name("UpdatePictureButton")
+
+    .Content("Fotoğrafı Güncelle")
+    .Events(e => e.Click("UpdatePictureFinish"))
+
+    )
+
+
+    </text>)
+    .Draggable(false)
+    .Events(e=> e.Close("onClosePicture"))
+
+)
+@(Html.Kendo().Window().Name("UpdateCv")
+    .Visible(false)
+    .Modal(true)
+    .Draggable(true)
+    .Content(@<text>
+                                                                                
+
+        <div class="wrapper">
+            <div class="dropZoneElement">
+                <div class="textWrapper">
+                    <p><span>+</span>CV ekle</p>
+                    <p class="dropImageHereText">Yüklemek için buraya sürükleniyiz.</p>
+                </div>
+            </div>
+        </div>
+        @(Html.Kendo().Upload()
+            .Name("cvs")
+            .Async(a => a
+            .Save("Cv_Save", "StajyerModel")
+            .Remove("Cv_Remove", "StajyerModel")
+            .AutoUpload(false)
+            )
+            .Events(e => e.Success("onSuccessCv").Select("onSelectCv").Upload("onUploadCv"))
+            .ShowFileList(true)
+            .Multiple(false)
+            .DropZone(".dropZoneElement")
+            .Validation(validation =>
+            {
+            validation.AllowedExtensions(new string[] { ".pdf" });
+            validation.MaxFileSize(5242880);
+            })
+            )
+            @(Html.Kendo().Button()
+            .Name("UpdateCvButton")
+
+            .Content("CV güncelle")
+            .Events(e => e.Click("UpdateCvFinish"))
+
+            )
+
+
+    </text>)
+                .Draggable(false)
+        .Events(e=> e.Close("onCloseCv"))
+
+    )
+    @(Html.Kendo().Window().Name("window")
+    .Visible(false)
+    .Modal(true)
+    .Draggable(true)
+    )
+
+
+    <script>
+        var selectedIdForPicture;
+        var selectedUrlForPicture; 
+        var currentLocForPicture;
+
+        var selectedIdForCv;
+        var selectedUrlForCv; 
+        var currentLocForCv;
+
+        var updateWindowDeleteFiles = true;
+
+
+         $("#grid").on("click", "#addNewStajyer", function (e) {
+            e.preventDefault();  //prevents postback
+            window.location = '@Url.Action("Create", "StajyerModel")';
+        });
+
+        function clearFilesToDeleteFolder(){ 
+             $.ajax({
+                type: "POST",
+                dataType: "Json",
+                url: '@Url.Action("Clear_FilesToDeleteFolder", "MailMessageModel")',
+                async: false,
+                contentType: "application/json",
+                success: function(returnSuccess) {
+                },
+                error: function (returnSuccess) {
+
+                    console.log("Silme işlemi başarısız")
+                }
+            });
+        }
+        function OpenCvUploadWindow(cvId, cvLoc) { // Loc => location
+            currentLocForCv = cvLoc;
+            selectedUrlForCv = "/CVs/" + cvLoc;
+            selectedIdForCv = cvId;
+
+            var wnd3 = $("#UpdateCv").data("kendoWindow");
+            wnd3.center();
+            wnd3.open();
+
+
+            // JUST incase
+            var upload = $("#cvs").data("kendoUpload");
+            upload.clearAllFiles();
+        }
+         function onSelectCv(e) {
+            var data = (e.files[0].name);
+            var found = false;
+            $.ajax({
+                type: "POST",
+                dataType: "Json",
+                url: '@Url.Action("CheckExistanceOfCv", "Upload")',
+                data: JSON.stringify(data),
+                async: false,
+                contentType: "application/json",
+                success: function(returnValue) {
+                    found = returnValue;
+                }
+
+            });
+            if (found) {
+                alert("Bu dosya ismi kullanılıyor. Yeniden adlandırarak yükleyiniz.");
+                e.preventDefault();
+            }
+        }
+        function onUploadCv(e){
+            e.data = {stajyerId:selectedIdForCv}
+            debugger;
+        }
+        function UpdateCvFinish(){
+             $(".k-upload-selected").click();
+
+        }
+         function onSuccessCv(e){
+             var data = selectedIdForCv;
+            $.ajax({
+                type: "POST",
+                dataType: "Json",
+                url: '@Url.Action("UpdateCv", "StajyerModel")',
+                data: JSON.stringify(data),
+                async: false,
+                contentType: "application/json",
+                success: function(returnSuccess) {
+                     if (returnSuccess != "") {
+                        currentLocForCv = returnSuccess;
+                    }
+
+                },
+                error: function (returnSuccess) {
+                    console.log("Cv güncelleme başarısız.")
+                }
+            });
+            var wnd3 = $("#UpdateCv").data("kendoWindow");
+            updateWindowDeleteFiles = false;
+            wnd3.close();
+            var grid = $("#grid").data("kendoGrid");
+            grid.refresh(); 
+            grid.dataSource.read();
+
+            //DO nothing
+        }
+        function onCloseCv(e){
+             var upload = $("#cvs").data("kendoUpload");
+            upload.clearAllFiles();
+        }
+       
+
+        function CvDownloadAction(cvLoc){
+            var url ="CVs/" + cvLoc;
+
+            
+            window.open(url, "_blank");
+        }
+
+
+        function OpenUpdatePictureWindow(){
+           var wnd2 = $("#UpdatePicture").data("kendoWindow");
+            var upload = $("#pictures").data("kendoUpload");
+            upload.clearAllFiles();      
+            wnd2.center();
+            wnd2.open();
+        }
+
+        function onSelectPicture(e) {
+            
+            var data = (e.files[0].name);
+            var found = false;
+            $.ajax({
+                type: "POST",
+                dataType: "Json",
+                url: '@Url.Action("CheckExistanceOfPicture", "Upload")',
+                data: JSON.stringify(data),
+                async: false,
+                contentType: "application/json",
+                success: function(returnValue) {
+                    found = returnValue;
+                }
+                
+            });
+
+            if (found){
+                alert("Bu dosya ismi kullanılıyor. Yeniden adlandırarak yükleyiniz.");
+                e.preventDefault();
+            }
+
+
+            var fileInfo = e.files[0];
+            var wrapper = this.wrapper;
+
+            setTimeout(function(){
+              addPreview(fileInfo, wrapper);
+            });
+
+        }
+        function UpdatePictureFinish(){
+            debugger;
+           $(".k-upload-selected").click();
+
+        }
+        function onUploadPicture(e){
+            e.data = {stajyerId:selectedIdForPicture}
+            debugger;
+        }
+        function onSuccessPicture(e) {
+             var data = selectedIdForPicture;
+
+            $.ajax({
+                type: "POST",
+                dataType: "Json",
+                url: '@Url.Action("UpdatePicture", "StajyerModel")',
+                data: JSON.stringify(data),
+                async: false,
+                contentType: "application/json",
+                success: function(returnSuccess) {
+                    if (returnSuccess != "") {
+                        currentLocForPicture = returnSuccess;
+                    }
+                },
+                error: function (returnSuccess) {
+                    console.log("Fotoğraf güncelleme başarısız.")
+                }
+            });
+            var wnd2 = $("#UpdatePicture").data("kendoWindow");
+            updateWindowDeleteFiles = false;
+            wnd2.close();
+            var wnd = $("#PictureBig").data("kendoWindow"); 
+            wnd.refresh();
+            var grid = $("#grid").data("kendoGrid");
+            grid.refresh(); 
+            grid.dataSource.read();
+
+            // TODO
+            
+        }
+        function onClosePicture(e) {
+            ($("#picturesToUpdate")).empty();
+            $(".k-clear-selected").click();
+           
+        }
+        
+        
+        function addPreview(file, wrapper) {
+            var raw = file.rawFile;
+            var reader = new FileReader();
+
+            if (raw) {
+                reader.onloadend = function() {
+                    var preview = $("<img class='image-preview'>").attr("src", this.result);
+
+                    wrapper.find(".k-file[data-uid='" + file.uid + "'] .k-file-group-wrapper")
+                        .replaceWith(preview);
+                };
+
+                reader.readAsDataURL(raw);
+            }
+        }
+        
+        function ImageClickAction(Id, loc) { // loc => location
+            currentLocForPicture = loc;
+            selectedUrlForPicture = "/Pictures/" + loc;
+            var wnd = $("#PictureBig").data("kendoWindow");
+            selectedIdForPicture = Id;
+            PictureBigImage.src = selectedUrlForPicture;
+            var img = document.getElementById("PictureBigImage");
+            img.width = 400;
+            img.height = 400;
+            wnd.center();
+            wnd.open();
+          
+        }
+
+
+
+
+        function window_refresh(){
+            ImageClickAction(selectedIdForPicture,currentLocForPicture);
+            
+        }
+
+
+        function forgeryToken() {
+            return kendo.antiForgeryTokens();
+        }
+
+        function refreshGrid(){
+             $("#grid").data("kendoGrid").dataSource.read();
+        }
+       
+    </script>
+    <style>
+        .image-preview {
+        position: relative;
+        vertical-align: top;
+        height: 45px;
+    }
+        .floatRight {
+        float: right;
+        }
+        .product-photo {
+            display: inline-block;
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background-size: 64px 65px;
+            background-position: center center;
+            vertical-align: middle;
+            line-height: 32px;
+            box-shadow: inset 0 0 1px #999, inset 0 0 10px rgba(0,0,0,.2);
+            margin-right: 5px;
+        }
+        .product-name {
+            display: inline-block;
+            vertical-align: middle;
+            line-height: 32px;
+            padding-left: 3px;
+        }
+        .dropZoneElement {
+            position: relative;
+            display: inline-block;
+            background-color: #f8f8f8;
+            border: 1px solid #c7c7c7;
+            width: 230px;
+            height: 110px;
+            text-align: center;
+        }
+
+        .textWrapper {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 100%;
+            font-size: 24px;
+            line-height: 1.2em;
+            font-family: Arial,Helvetica,sans-serif;
+            color: #000;
+        }
+
+        .dropImageHereText {
+            color: #c7c7c7;
+            text-transform: uppercase;
+            font-size: 12px;
+        }
+
+        .product {
+            float: left;
+            position: relative;
+            margin: 0 10px 10px 0;
+            padding: 0;
+        }
+
+        .product img {
+            width: 110px;
+            height: 110px;
+        }
+
+        .wrapper:after {
+            content: ".";
+            display: block;
+            height: 0;
+            clear: both;
+            visibility: hidden;
+        }
+    </style>

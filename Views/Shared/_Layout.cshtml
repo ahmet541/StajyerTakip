@@ -1,0 +1,93 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - StajyerTakip</title>
+
+    <environment include="Development">
+        <link rel="stylesheet" href="~/lib/bootstrap/css/bootstrap.css" />
+        <link rel="stylesheet" href="~/css/site.css" />
+    </environment>
+    <environment exclude="Development">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+              asp-fallback-href="~/lib/bootstrap/css/bootstrap.min.css"
+              asp-fallback-test-class="sr-only" asp-fallback-test-property="position" asp-fallback-test-value="absolute" />
+        <link rel="stylesheet" href="~/css/site.min.css" asp-append-version="true" />
+    </environment>
+
+
+    <link href="https://kendo.cdn.telerik.com/2022.2.621/styles/kendo.bootstrap-main.min.css" rel="stylesheet" type="text/css" />
+	<link href="https://cdn.kendostatic.com/2022.2.621/styles/kendo.default-ocean-blue.min.css" rel="stylesheet" type="text/css" />
+	<script src="https://cdn.kendostatic.com/2022.2.621/js/jquery.min.js"></script>
+	<script src="https://cdn.kendostatic.com/2022.2.621/js/jszip.min.js"></script>
+	<script src="https://cdn.kendostatic.com/2022.2.621/js/kendo.all.min.js"></script>
+	<script src="https://cdn.kendostatic.com/2022.2.621/js/kendo.aspnetmvc.min.js"></script>
+    <link href="~/css/layoutSideBar.css" rel="stylesheet" type="text/css" />
+    <script src="https://kendo.cdn.telerik.com/2019.2.619/js/cultures/kendo.culture.tr-TR.min.js"></script>
+    <script>kendo.culture("tr-TR")</script>
+
+</head>
+<body class="k-content">
+    <div class="s-layout">
+        <!-- Sidebar -->
+        <div class="s-layout__sidebar">
+            <a class="s-sidebar__trigger" href="#0">
+                <i class="fa fa-bars"></i>
+            </a>
+
+            <nav class="s-sidebar__nav">
+                <ul>
+                    <li>
+
+                    <img id="mainPageLogo"src="~/Pictures/Emblem_of_the_Presidency_of_Turkey.svg.png" style="width:50%;heigth:%50"/>
+                    </li>
+                   
+                    <li>
+                        @*<a class="s-sidebar__nav-link" style="text-align:center" onclick="@Html.ActionLink("Stajyer Takip", "Index", "StajyerModel", new { area = "" }, new { @class = "navbar-brand" })" />*@
+                        <a class="s-sidebar__nav-link" href="@Url.Action("Index", "StajyerModel")">
+                            <em>Stajyer Takip Sayfası</em>
+
+                        </a>
+                           
+                       
+                    </li>
+                    <li>
+                        <a class="s-sidebar__nav-link"  href="@Url.Action("Index", "MailMessageModel")">
+                            <i class="fa fa-user"></i><em>Başvuru Formu Sayfası</em>
+                        </a>
+                    </li>
+
+                </ul>
+            </nav>
+        </div>
+
+        <main class="s-layout__content" style="flex-wrap: wrap">
+            @RenderBody()
+        </main>
+    </div>
+
+    
+
+    
+
+    <footer class="footer text-center d-flex align-items-center">
+        <div class="container-fluid">
+            <p class="text-muted">
+                Copyright © @DateTime.Now.Year Progress Software Corporation and/or its subsidiaries or affiliates. All rights reserved.
+            </p>
+        </div>
+    </footer>
+
+    <environment names="Development">
+        <script src="~/lib/bootstrap/js/bootstrap.js"></script>
+    </environment>
+    <environment names="Staging,Production">
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+                asp-fallback-src="~/lib/bootstrap/js/bootstrap.bundle.min.js"
+                asp-fallback-test="window.jQuery && window.jQuery.fn && window.jQuery.fn.modal"></script>
+    </environment>
+    @RenderSection("Scripts", required: false)
+
+</body>
+</html>

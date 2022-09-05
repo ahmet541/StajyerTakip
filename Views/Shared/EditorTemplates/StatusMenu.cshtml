@@ -1,0 +1,7 @@
+﻿@using StajyerTakip.Models
+@model StajyerTakip.Models.Status
+
+
+@(Html.Kendo().DropDownListFor(m => m)
+ .BindTo(StajyerTakip.Controllers.Extensions.EnumToSelectList(typeof (Status)))
+)

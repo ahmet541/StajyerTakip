@@ -1,0 +1,239 @@
+﻿@using Kendo.Mvc.UI
+@model StajyerTakip.Models.StajyerModel
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+<h1>Yeni Stajyer Ekle.</h1>
+
+@*<hr />
+*@<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Create" name="createForm" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="demo-section wide">
+                <div class="wrapper">
+                    <div id="picturesToCreate"></div>
+                    <div class="dropZoneElement">
+                        <div class="textWrapper">
+                            <p><span>+</span>Fotoğraf Ekle</p>
+                            <p class="dropImageHereText">Fotoğrafı buraya sürükleyiniz.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @(Html.Kendo().Upload()
+            .Name("pictures")
+            .Async(a => a
+            .Save("Picture_Save", "Upload")
+            .Remove("Picture_Remove", "Upload")
+            .AutoUpload(false)
+            )
+            .Events(e => e.Success("onSuccessPicture").Upload("onUploadPicture").Remove("onRemovePicture").Select("onSelectPicture"))
+            .Multiple(false)
+            .ShowFileList(true)
+            .DropZone(".dropZoneElement")
+            .Validation(validation =>
+            {
+            validation.AllowedExtensions(new string[] { ".jpg", ".jpeg", ".png", ".bmp", ".gif" });
+            validation.MaxFileSize(5242880);
+            })
+            )
+
+            <div class="form-group">
+                <label asp-for="Name" class="control-label"></label>
+                <input asp-for="Name" class="form-control" />
+                @*@Html.ValidationMessage("Name", "Bu alan boş bırakılamaz.", new { @class = "text-danger" })*@
+
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="IdentificationNumber" class="control-label"></label>
+                <input asp-for="IdentificationNumber" class="form-control" />
+                @*@Html.ValidationMessage("IdentificationNumber", "Bu alan boş bırakılamaz.", new { @class = "text-danger" })*@
+               <span asp-validation-for="IdentificationNumber" class="text-danger" ></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="StartingDate" class="control-label"></label>
+                <input asp-for="StartingDate" class="form-control" />
+                @*<span asp-validation-for="StartingDate" class="text-danger"></span>*@
+                @Html.ValidationMessageFor(m=>m.StartingDate)
+
+            </div>
+            <div class="form-group">
+                <label asp-for="EndingDate" class="control-label"></label>
+                <input asp-for="EndingDate" class="form-control" />
+                <span asp-validation-for="EndingDate" class="text-danger"></span>
+            </div>
+
+
+
+            <div class="wrapper">
+                <div class="dropZoneElement">
+                    <div class="textWrapper">
+                        <p><span>+</span>CV ekle</p>
+                        <p class="dropImageHereText">Yüklemek için buraya sürükleniyiz.</p>
+                    </div>
+                </div>
+            </div>
+            @(Html.Kendo().Upload()
+            .Name("cvs")
+            .Async(a => a
+            .Save("Cv_Save", "Upload")
+            .Remove("Cv_Remove", "Upload")
+            .AutoUpload(false)
+            )
+            .Events(e => e.Success("onSuccessCv").Remove("onRemoveCv").Select("onSelectCv"))
+            .ShowFileList(true)
+            .Multiple(false)
+            .Validation(validation =>
+            {
+            validation.AllowedExtensions(new string[] { ".pdf" });
+            validation.MaxFileSize(5242880);
+            })
+            )
+            <div class="form-group">
+                <input  type="hidden" class="btn btn-primary" />
+                <input  value="Create" class="btn btn-primary" onclick="createStajyerFinish()"/>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+@*<div>
+    <a asp-action="Index">Back to List</a>
+</div>*@
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
+
+
+
+
+
+
+
+<script>
+    var pictureUploadFinished= true;
+    var cvUploadFinished = true;
+    // TO DO add onclose for deleting
+
+    function onSelectPicture(e) {
+
+        var fileInfo = e.files[0];
+        var wrapper = this.wrapper;
+
+        setTimeout(function(){
+            addPreview(fileInfo, wrapper);
+        });
+        pictureUploadFinished = false;
+    }
+    function onSuccessPicture(e){
+        debugger;
+        pictureUploadFinished = true;
+        if( cvUploadFinished){
+            document.forms["createForm"].submit();
+        }
+
+    }
+    function onRemovePicture(e) {
+        debugger;
+        pictureUploadFinished = true;
+        debugger;
+    }
+    function onUploadPicture(e) {
+
+    }
+    function createStajyerFinish() { // TO DO
+        if( cvUploadFinished && pictureUploadFinished){
+            document.forms["createForm"].submit();
+        }
+        $(".k-upload-selected").click();
+    }
+
+    function addPreview(file, wrapper) {
+        var raw = file.rawFile;
+        var reader = new FileReader();
+
+        if (raw) {
+            reader.onloadend = function() {
+                var preview = $("<img class='image-preview'>").attr("src", this.result);
+
+                wrapper.find(".k-file[data-uid='" + file.uid + "'] .k-file-group-wrapper")
+                    .replaceWith(preview);
+            };
+
+            reader.readAsDataURL(raw);
+        }
+    }
+
+    function onSuccessCv(e) {
+         cvUploadFinished = true;
+        if( pictureUploadFinished){
+            document.forms["createForm"].submit();
+            pictureUploadFinished = false;
+            cvUploadFinished = false;
+        }
+    }
+    function onSelectCv(e){
+        cvUploadFinished = false;
+    }
+    function onRemoveCv(e){
+        cvUploadFinished = true;
+    }
+
+    </script>
+<style>
+    .k-clear-selected, .k-upload-selected {
+        display: none !important;
+      }
+    .dropZoneElement {
+        position: relative;
+        display: inline-block;
+        background-color: #f8f8f8;
+        border: 1px solid #c7c7c7;
+        width: 230px;
+        height: 110px;
+        text-align: center;
+    }
+
+    .textWrapper {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 100%;
+        font-size: 24px;
+        line-height: 1.2em;
+        font-family: Arial,Helvetica,sans-serif;
+        color: #000;
+    }
+
+    .dropImageHereText {
+        color: #c7c7c7;
+        text-transform: uppercase;
+        font-size: 12px;
+    }
+
+    .product {
+        float: left;
+        position: relative;
+        margin: 0 10px 10px 0;
+        padding: 0;
+    }
+
+    .product img {
+        width: 110px;
+        height: 110px;
+    }
+
+    .wrapper:after {
+        content: ".";
+        display: block;
+        height: 0;
+        clear: both;
+        visibility: hidden;
+    }
+</style>

@@ -1,0 +1,353 @@
+﻿@using Kendo.Mvc.UI
+@model StajyerTakip.Models.MailMessageModel
+
+@{
+    ViewData["Title"] = "SendMail";
+}
+
+<h1>Başvuru Formu Gönderme Sayfası</h1>
+
+
+    @(Html.Kendo().Splitter()
+    .Name("horizontal")
+    .Orientation(SplitterOrientation.Horizontal)
+    .Panes(horizontalPanes =>
+    {
+    horizontalPanes.Add()
+    .HtmlAttributes(new { id = "left-pane", style = "height: 100%;" })
+    .Size("660px")
+    .Collapsible(false)
+    .Scrollable(false)
+    .Content(@<div class="pane-content">
+        <div class="row">
+            <div class="col-md">
+                <form asp-action="Send">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                    <div class="form-group">
+                        <label asp-for="To" class="control-label"></label>
+                        <input asp-for="To" class="form-control" />
+                        <span asp-validation-for="To" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Subject" class="control-label"></label>
+                        <input asp-for="Subject" class="form-control" />
+                        <span asp-validation-for="Subject" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Body" class="control-label"></label>
+                        @(Html.Kendo().TextArea()
+                        .Name("Body")
+
+                        .Placeholder("Enter your text here.")
+                        .Rows(20)
+                        .HtmlAttributes(new { style = "width: 100%", required = true, data_required_msg = "Please enter a text.", data_max_msg= "Enter value between 1 and 200" })
+                            )
+                        <span asp-validation-for="Body" class="text-danger"></span>
+                    </div>
+
+
+                    <div class="form-group">
+                        <input type="submit" value="Send" class="btn btn-primary" />
+                    </div>
+
+
+
+                </form>
+            </div>
+        </div>
+
+    </div>);
+
+
+
+    horizontalPanes.Add()
+        .HtmlAttributes(new { id = "right-pane", style = "height: 100%;" })
+        .Collapsible(false)
+        .Scrollable(false)
+        .Size("220px")
+        .Content(@<div class="pane-content">
+
+
+                                        @(Html.Kendo().Button()
+        .Name("basvuruFormuUploadButton")
+        .HtmlAttributes(new { type = "button" })
+        .Content("Basvuru Formu Yenile")
+        .Events(e => e.Click("OpenBasvuruFormuUploadWindow")))
+
+                                         @(Html.Kendo().Button()
+        .Name("stajSözlesmesiUploadButton")
+        .HtmlAttributes(new { type = "button" })
+        .Content("Staj Sözleşmesini Yenile")
+        .Events(e => e.Click("OpenStajSözlesmesiUploadWindow")))
+
+    </div>);
+    })
+
+    )
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
+
+
+    @(Html.Kendo().Window().Name("UpdateBasvuruFormu")
+    .Visible(false)
+    .Modal(true)
+    .Draggable(true)
+    .Content(@<text>
+
+
+        <div class="wrapper">
+            <div class="dropZoneElement">
+                <div class="textWrapper">
+                    <p><span>+</span>BasvuruFormu Ekle</p>
+                    <p class="dropImageHereText">Drop BasvuruFormu here to upload</p>
+                </div>
+            </div>
+        </div>
+        @(Html.Kendo().Upload()
+        .Name("basvuruFormu")
+        .Async(a => a
+        .Save("BasvuruFormu_Save", "MailMessageModel")
+        .Remove("BasvuruFormu_Remove", "MailMessageModel")
+        .AutoUpload(false)
+        )
+        .Events(e => e.Success("onSuccessBasvuruFormu").Select("onSelectBasvuruFormu"))
+        .ShowFileList(true)
+        .Multiple(false)
+        .DropZone(".dropZoneElement")
+        .Validation(validation =>
+        {
+        validation.AllowedExtensions(new string[] { ".pdf" });
+        validation.MaxFileSize(5000000);
+        })
+                                                        )
+                                                        @(Html.Kendo().Button()
+        .Name("UpdateBasvuruFormuButton")
+
+        .Content("BasvuruFormu güncelle")
+        .Events(e => e.Click("UpdateBasvuruFormuFinish"))
+
+                                                        )
+
+
+    </text>)
+        .Draggable(false)
+        .Events(e=> e.Close("onCloseBasvuruFormu"))
+
+    )
+
+
+
+
+    @(Html.Kendo().Window().Name("UpdateStajSözlesmesi")
+    .Visible(false)
+    .Modal(true)
+    .Draggable(true)
+    .Content(@<text>
+
+
+                    <div class="wrapper">
+                        <div class="dropZoneElement">
+                            <div class="textWrapper">
+                                <p><span>+</span>StajSözlesmesi Ekle</p>
+                                <p class="dropImageHereText">Drop StajSözlesmesi here to upload</p>
+                            </div>
+                        </div>
+                    </div>
+                    @(Html.Kendo().Upload()
+        .Name("stajSözlesmesi")
+        .Async(a => a
+        .Save("StajSözlesmesi_Save", "MailMessageModel")
+        .Remove("StajSözlesmesi_Remove", "MailMessageModel")
+        .AutoUpload(false)
+        )
+        .Events(e => e.Success("onSuccessStajSözlesmesi").Select("onSelectStajSözlesmesi"))
+        .ShowFileList(true)
+        .Multiple(false)
+        .DropZone(".dropZoneElement")
+        .Validation(validation =>
+        {
+        validation.AllowedExtensions(new string[] { ".pdf" });
+        validation.MaxFileSize(5000000);
+        })
+                                        )
+                                        @(Html.Kendo().Button()
+        .Name("UpdateStajSözlesmesiButton")
+
+        .Content("StajSözlesmesi güncelle")
+        .Events(e => e.Click("UpdateStajSözlesmesiFinish"))
+
+                                        )
+
+
+    </text>)
+        .Draggable(false)
+        .Events(e=> e.Close("onCloseStajSözlesmesi"))
+
+    )
+    <script>
+
+    function OpenStajSözlesmesiUploadWindow() { // Loc => location
+
+        var upload = $("#stajSözlesmesi").data("kendoUpload");
+            upload.clearAllFiles();
+        var wnd = $("#UpdateStajSözlesmesi").data("kendoWindow");
+        wnd.center();
+        wnd.open();
+
+
+    }
+    function UpdateStajSözlesmesiFinish(){
+
+         $(".k-upload-selected").click();
+         debugger;
+    }
+    function onSuccessStajSözlesmesi(e) {
+        $.ajax({
+            type: "POST",
+            dataType: "Json",
+            url: '@Url.Action("UpdateStajSözlesmesi", "MailMessageModel")',
+            async: false,
+            contentType: "application/json",
+            success: function(returnSuccess) {
+                debugger;
+            },
+            error: function (returnSuccess) {
+                console.log("Basvuru Formu güncelleme başarısız.")
+            }
+        });
+
+        var wnd = $("#UpdateStajSözlesmesi").data("kendoWindow");
+        wnd.close();
+
+        //DO nothing
+    }
+    function onCloseStajSözlesmesi(e) {
+            var upload = $("#stajSözlesmesi").data("kendoUpload");
+            upload.clearAllFiles();
+            //var upload = $("#stajSözlesmesi").data("kendoUpload");
+            // upload.();
+    }
+    function onSelectStajSözlesmesi(e) {
+        debugger;
+    }
+
+    function OpenBasvuruFormuUploadWindow() { // Loc => location
+        var upload = $("#basvuruFormu").data("kendoUpload");
+        upload.clearAllFiles();
+        var wnd = $("#UpdateBasvuruFormu").data("kendoWindow");
+        wnd.center();
+        wnd.open();
+    }
+    function UpdateBasvuruFormuFinish(){
+        $(".k-upload-selected").click();
+        debugger;
+        
+
+    }
+    function onSuccessBasvuruFormu(e) {
+        $.ajax({
+            type: "POST",
+            dataType: "Json",
+            url: '@Url.Action("UpdateBasvuruFormu", "MailMessageModel")',
+            async: false,
+            contentType: "application/json",
+            success: function(returnSuccess) {
+                debugger;
+            },
+            error: function (returnSuccess) {
+                console.log("Basvuru Formu güncelleme başarısız.")
+            }
+        });
+
+        var wnd = $("#UpdateBasvuruFormu").data("kendoWindow");
+        wnd.close();
+    }
+    function onCloseBasvuruFormu(e) {
+        var upload = $("#basvuruFormu").data("kendoUpload");
+        upload.clearAllFiles();
+
+        
+    }
+    function onSelectBasvuruFormu(e) {
+        //Do nothing
+    }
+    function clearFilesToDeleteFolder(){
+         $.ajax({
+            type: "POST",
+            dataType: "Json",
+            url: '@Url.Action("Clear_FilesToDeleteFolder", "MailMessageModel")',
+            async: false,
+            contentType: "application/json",
+            success: function(returnSuccess) {
+            },
+            error: function (returnSuccess) {
+
+                console.log("Silme işlemi başarısız")
+            }
+        });
+    }
+    </script>
+    <style>
+        .k-clear-selected, .k-upload-selected {
+        display: none !important;
+      }
+        #horizontal .k-splitbar {
+            visibility: hidden;
+        }
+
+        #left-pane, #center-pane, #right-pane {
+            color: #000;
+            background-color: #F5F5F5;
+        }
+
+        .pane-content {
+            padding: 0 10px;
+        }
+
+        #horizontal {
+            height: 550px;
+        }
+    </style>
+
+    <style>
+    .dropZoneElement {
+        position: relative;
+        display: inline-block;
+        background-color: #f8f8f8;
+        border: 1px solid #c7c7c7;
+        width: 230px;
+        height: 110px;
+        text-align: center;
+    }
+
+    .textWrapper {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 100%;
+        font-size: 24px;
+        line-height: 1.2em;
+        font-family: Arial,Helvetica,sans-serif;
+        color: #000;
+    }
+
+    .dropImageHereText {
+        color: #c7c7c7;
+        text-transform: uppercase;
+        font-size: 12px;
+    }
+
+    .wrapper:after {
+        content: ".";
+        display: block;
+        height: 0;
+        clear: both;
+        visibility: hidden;
+    }
+
+    #horizontal {
+        height: 650px;
+    }
+</style>
